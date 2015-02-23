@@ -77,7 +77,7 @@ public class BarbershopGui extends JFrame implements Constants, Gui, ChangeListe
 	private void quit() {
 		doorman.stopThread();
 		for(int i = 0; i < NOF_BARBERS; i++)
-			barbers[i].stopThread();
+			barbers[i].stopThread(Globals.barberSleep); ////// TODO fix
 		System.exit(0);
 	}
 

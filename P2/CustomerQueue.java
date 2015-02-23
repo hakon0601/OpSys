@@ -56,4 +56,8 @@ public class CustomerQueue {
             }
         }
     }
+
+    public void removeFromSeating(Customer customer) {
+        seating.remove(customer);
+    }
 }
