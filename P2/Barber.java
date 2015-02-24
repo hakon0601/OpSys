@@ -26,32 +26,54 @@ public class Barber extends Thread {
 	 * Starts the barber running as a separate thread.
 	 */
 	public void startThread() {
-		run();
+        this.start();
 	}
 
 	/**
 	 * Stops the barber thread.
 	 */
-	public void stopThread(int sleepTime) {
+	public void stopThread() {
+
+    }
+
+    public void run() {
+        while (true) {
+            Customer customer;
+            synchronized (this) {
+                customer = queue.getQueue().poll();
+                if (customer != null) {
+                    queue.removeFromSeating(customer);
+                }
+            }
+            if (customer != null) {
+                gui.fillBarberChair(pos, customer);
+                gui.println("Barber #" + pos + " got customer #" + customer.getCustomerID());
+                barberWork();
+                gui.emptyBarberChair(pos);
+                gui.println("Barber #" + pos + " finished and went to sleep");
+            }
+            barberSleep();
+        }
+    }
+
+    private void barberSleep() {
         try {
-            sleep(sleepTime);
+            gui.barberIsSleeping(pos);
+            this.sleep(Globals.barberSleep);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    public void run() {
-        Customer customer = queue.getQueue().poll();
-        if (customer != null) {
-            queue.removeFromSeating(customer);
-            gui.fillBarberChair(pos, customer);
-            stopThread(Globals.barberWork);
-            gui.emptyBarberChair(pos);
+    private void barberWork() {
+        try {
+            gui.barberIsAwake(pos);
+            this.sleep(Globals.barberWork);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-        stopThread(Globals.barberSleep);
-        startThread();
     }
 
-	// Add more methods as needed
+    // Add more methods as needed
 }
 

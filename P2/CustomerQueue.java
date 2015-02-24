@@ -1,5 +1,5 @@
-import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Queue;
 
 /**
@@ -14,13 +14,13 @@ public class CustomerQueue {
 
     private Queue<Customer> queue;
     private ArrayList<Customer> seating;
+    private int queueLength;
     private Gui gui;
 
-    private int queueLength;
     public CustomerQueue(int queueLength, Gui gui) {
         this.queueLength = queueLength;
         this.gui = gui;
-        queue = new ArrayDeque<Customer>();
+        queue = new LinkedList<Customer>();
         seating = new ArrayList<Customer>();
         for (int i = 0; i < queueLength ; i++) {
             seating.add(null);
@@ -50,7 +50,7 @@ public class CustomerQueue {
         for (int i = 0 ; i < seating.size() ; i++) {
             if (seating.get(i) == null) {
                 seating.set(i, customer);
-                gui.fillLoungeChair(i, customer);
+                gui.fillLoungeChair(i + 1, customer);
                 gui.println("customer #" + customer.getCustomerID() + " was seated in pos: " + (i + 1));
                 return;
             }
@@ -58,6 +58,8 @@ public class CustomerQueue {
     }
 
     public void removeFromSeating(Customer customer) {
+        int pos = seating.indexOf(customer);
         seating.remove(customer);
+        gui.emptyLoungeChair(pos);
     }
 }

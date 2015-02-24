@@ -14,7 +14,7 @@ public class Doorman extends Thread {
     Gui gui;
 
 	public Doorman(CustomerQueue queue, Gui gui) {
-		this.queue = queue;
+        this.queue = queue;
         this.gui = gui;
 	}
 
@@ -22,20 +22,14 @@ public class Doorman extends Thread {
 	 * Starts the doorman running as a separate thread.
 	 */
 	public void startThread() {
-        run();
+        this.start();
 	}
 
 	/**
 	 * Stops the doorman thread.
 	 */
 	public void stopThread() {
-        try {
-            sleep(Globals.doormanSleep);
-            gui.println("sleeping for: " + Globals.doormanSleep + " millis");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        startThread();
+        this.stop();
     }
 
     public CustomerQueue getQueue() {
@@ -43,11 +37,40 @@ public class Doorman extends Thread {
     }
 
     public void run(){
-        if (queue.getQueue().size() < queue.getQueueLength()) {
-            Customer customer = new Customer();
-            queue.addToQueue(customer, gui);
+        while (true) {
+            gui.println(queue.getQueue().size() + "");
+            if (queue.getQueue().size() < queue.getQueueLength()) {
+                Customer customer = new Customer();
+                synchronized (this) {
+                    queue.addToQueue(customer, gui);
+                }
+
+                doormanSleep();
+            }
+            else {
+                waitForBarber();
+            }
         }
-        this.stopThread();
+    }
+
+    private void doormanSleep() {
+        try {
+            this.sleep(Globals.doormanSleep - 2000); // TODO FIX
+            gui.println("Doorman sleeping for: " + Globals.doormanSleep + " millis");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void waitForBarber() {
+        try {
+            synchronized (this) {
+                gui.println("Doorman is now waiting for notification");
+                this.wait();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 
