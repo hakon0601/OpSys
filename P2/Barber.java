@@ -43,6 +43,10 @@ public class Barber extends Thread {
                 customer = queue.getQueue().poll();
                 if (customer != null) {
                     queue.removeFromSeating(customer);
+                    Doorman d = gui.getDoorman();
+                    synchronized (d) {
+                        d.notify();
+                    }
                 }
             }
             if (customer != null) {

@@ -31,7 +31,8 @@ public class BarbershopGui extends JFrame implements Constants, Gui, ChangeListe
 	/** The sliders controlling the speeds of different tasks */
 	private JSlider barberSleepSlider, barberWorkSlider, doormanSleepSlider;
 
-	/** A reference to the doorman */
+
+    /** A reference to the doorman */
 	private Doorman doorman;
 	/** An array of references to the barbers */
 	private Barber barbers[];
@@ -263,4 +264,8 @@ public class BarbershopGui extends JFrame implements Constants, Gui, ChangeListe
 		BarbershopGui gui = new BarbershopGui("Solution to P2");
 		gui.startSimulation();
 	}
+
+    public Doorman getDoorman() {
+        return doorman;
+    }
 }

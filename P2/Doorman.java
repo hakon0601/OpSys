@@ -38,13 +38,9 @@ public class Doorman extends Thread {
 
     public void run(){
         while (true) {
-            gui.println(queue.getQueue().size() + "");
             if (queue.getQueue().size() < queue.getQueueLength()) {
                 Customer customer = new Customer();
-                synchronized (this) {
-                    queue.addToQueue(customer, gui);
-                }
-
+                queue.addToQueue(customer, gui);
                 doormanSleep();
             }
             else {
@@ -62,12 +58,10 @@ public class Doorman extends Thread {
         }
     }
 
-    private void waitForBarber() {
+    private synchronized void waitForBarber() {
+        gui.println("Doorman is now waiting for notification");
         try {
-            synchronized (this) {
-                gui.println("Doorman is now waiting for notification");
-                this.wait();
-            }
+            this.wait();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
