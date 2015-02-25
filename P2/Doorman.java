@@ -51,7 +51,7 @@ public class Doorman extends Thread {
 
     private void doormanSleep() {
         try {
-            this.sleep(Globals.doormanSleep - 2000); // TODO FIX
+            this.sleep(Globals.doormanSleep);
             gui.println("Doorman sleeping for: " + Globals.doormanSleep + " millis");
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -65,6 +65,10 @@ public class Doorman extends Thread {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public synchronized void notifyDoorman(Doorman doorman){
+        doorman.notify();
     }
 
 
