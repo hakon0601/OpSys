@@ -67,6 +67,11 @@ public class Simulator implements Constants
 			Event event = eventQueue.getNextEvent();
 			// Find out how much time that passed...
 			long timeDifference = event.getTime()-clock;
+
+            System.out.println("clock: " + clock);
+            System.out.println("time: " + event.getTime());
+            System.out.println("type: " + event.getType());
+
 			// ...and update the clock.
 			clock = event.getTime();
 			// Let the memory unit and the GUI know that time has passed
@@ -155,25 +160,42 @@ public class Simulator implements Constants
 	}
 
     private void flushCpuQueue() {
-        Process p = cpu.checkCpu();
-        while (p != null) {
-
+        /*
+        Process p = cpu.checkIONeeds();
+        if (p != null) {
+            eventQueue.insertEvent(new Event(IO_REQUEST, clock + p.getTimeToNextIoOperation()));
         }
+        */
+        cpu.setActiveCpu(gui);
+        Process p = cpu.checkCpuSwitch();
+        if (p != null) {
+            eventQueue.insertEvent(new Event(SWITCH_PROCESS, clock + cpu.getMaxCpuTime()));
+        }
+        p = cpu.checkCpuEnd();
+        if (p != null) {
+            eventQueue.insertEvent(new Event(END_PROCESS, clock + p.getCpuTimeNeeded()));
+        }
+
     }
 
 	/**
 	 * Simulates a process switch.
 	 */
 	private void switchProcess() {
-		// Incomplete
+		System.out.println("Switching process to the back of the line");
+        cpu.switchFront();
+        flushCpuQueue();
 	}
 
 	/**
 	 * Ends the active process, and deallocates any resources allocated to it.
 	 */
 	private void endProcess() {
-		// Incomplete
-	}
+        System.out.println("Ending process: ");
+        cpu.endProcess();
+        flushCpuQueue();
+
+    }
 
 	/**
 	 * Processes an event signifying that the active process needs to

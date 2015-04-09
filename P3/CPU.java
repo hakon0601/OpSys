@@ -28,8 +28,8 @@ public class CPU {
      * Returns the amount of memory in the memory device.
      * @return	The size of the memory device.
      */
-    public long getMemorySize() {
-        return memorySize;
+    public long getMaxCpuTime() {
+        return maxCpuTime;
     }
 
     /**
@@ -46,38 +46,74 @@ public class CPU {
      * If there is, the process that was granted memory is returned,
      * otherwise null is returned.
      */
-    public Process checkCpu() {
+    public Process checkCpuSwitch() {
         if(!cpuQueue.isEmpty()) {
             Process nextProcess = (Process)cpuQueue.getNext();
-            if(nextProcess.getTimeSpentInCpu() + maxCpuTime < nextProcess.getCpuTimeNeeded()) { // hvis denne prosessen skal gjøres noe med
-                //prosessen skal flyttes tilbake fordi den ikke blir ferdig i prosessoren
-                start ny event for switch process
+            if(nextProcess.getTimeSpentInCpu() + maxCpuTime < nextProcess.getCpuTimeNeeded()) {
+                //prosessen skal flyttes tilbake fordi den ikke blir ferdig i CPUen før max-tid har gått
+                //start ny event for switch process
                 //nextProcess.leftMemoryQueue(clock);
-                cpuQueue.removeNext();
                 return nextProcess;
             }
         }
         return null;
     }
 
+    public Process checkCpuEnd() {
+        if(!cpuQueue.isEmpty()) {
+            Process nextProcess = (Process)cpuQueue.getNext();
+            if(nextProcess.getTimeSpentInCpu() + maxCpuTime >= nextProcess.getCpuTimeNeeded()) { // hvis denne prosessen skal gjøres noe med
+                //prosessen blir ferdig i max-tidsrommet
+                //start ny event for end process
+                //nextProcess.leftMemoryQueue(clock);
+                return nextProcess;
+            }
+        }
+        return null;
+    }
+
+    public Process checkIONeeds() {
+        return null;
+    }
+
+    public void switchFront() {
+        if(!cpuQueue.isEmpty()) {
+            Process nextProcess = (Process) cpuQueue.getNext();
+            nextProcess.setTimeSpentInCpu(nextProcess.getTimeSpentInCpu() + maxCpuTime);
+            cpuQueue.removeNext();
+            insertProcess(nextProcess);
+        }
+    }
+
+    public void endProcess() {
+        if(!cpuQueue.isEmpty()) {
+            Process nextProcess = (Process) cpuQueue.getNext();
+            nextProcess.setTimeSpentInCpu(nextProcess.getCpuTimeNeeded());
+            cpuQueue.removeNext();
+        }
+    }
+
+    public void setActiveCpu(Gui gui) {
+        if (!cpuQueue.isEmpty()) {
+            gui.setCpuActive((Process)cpuQueue.getNext());
+        }
+        else {
+            gui.setCpuActive(null);
+        }
+    }
+
+
     /**
      * This method is called when a discrete amount of time has passed.
      * @param timePassed	The amount of time that has passed since the last call to this method.
      */
+    /*
     public void timePassed(long timePassed) {
         statistics.memoryQueueLengthTime += memoryQueue.getQueueLength()*timePassed;
         if (memoryQueue.getQueueLength() > statistics.memoryQueueLargestLength) {
             statistics.memoryQueueLargestLength = memoryQueue.getQueueLength();
         }
     }
-
-    /**
-     * This method is called when a process is exiting the system.
-     * The memory allocated to this process is freed.
-     * @param p	The process that is leaving the system.
-     */
-    public void processCompleted(Process p) {
-        freeMemory += p.getMemoryNeeded();
-    }
+    */
 }
 
