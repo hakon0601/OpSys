@@ -2,20 +2,20 @@ import java.util.Random;
 
 /**
  * This class implements functionality associated with
- * the memory device of the simulated system.
+ * the I/O device of the simulated system.
  */
 public class IO {
-    /** The queue of processes waiting for free memory */
+    /** The queue of processes waiting for a free IO device */
     private Queue IOQueue;
     /** A reference to the statistics collector */
     private Statistics statistics;
-    /** The amount of memory in the memory device */
+    /** The average IO time */
     private long avgIoTime;
 
     /**
-     * Creates a new memory device with the given parameters.
+     * Creates a new IO device with the given parameters.
      * @param IOQueue	The cpu queue to be used.
-     * @param avgIoTime	The maximum processing time for the CPu device.
+     * @param avgIoTime	The average computation time of the IO device.
      * @param statistics	A reference to the statistics collector.
      */
     public IO(Queue IOQueue, long avgIoTime, Statistics statistics) {
@@ -25,15 +25,15 @@ public class IO {
     }
     /*
         /**
-         * Returns the amount of memory in the memory device.
-         * @return	The size of the memory device.
+         * Returns the average IO processing time.
+         * @return	The average IO processing time.
          */
     public long getavgIoTime() {
         return avgIoTime;
     }
 
     /**
-     * Adds a process to the memory queue.
+     * Adds a process to the IO queue.
      * @param p	The process to be added.
      */
     public void insertProcess(Process p) {
@@ -65,13 +65,28 @@ public class IO {
     }
 
 
-    public void moveProcessToCpu(CPU cpu) {
+    public void moveProcessToCpu(CPU cpu, long clock) {
         if (!IOQueue.isEmpty()) {
             Process nextProcess = (Process) IOQueue.getNext();
+            nextProcess.setTimeSpentInIo(nextProcess.getTimeSpentInIo() + (clock - nextProcess.timeEnteredIO));
+            nextProcess.setTimeSpentWaitingForIo(nextProcess.getTimeSpentWaitingForIo() + (clock - nextProcess.timeEnteredIOQueue));
+            nextProcess.timeEnteredReadyQueue = clock;
+            nextProcess.incrementnofTimesInReadyQueue();
             cpu.insertProcess(nextProcess);
             IOQueue.removeNext();
             nextProcess.setTimeToNextIoOperation(nextProcess.generateTimeToNextIoOperation());
             nextProcess.isAssignedEvent = false;
+        }
+    }
+
+    /**
+     * This method is called when a discrete amount of time has passed.
+     * @param timePassed	The amount of time that has passed since the last call to this method.
+     */
+    public void timePassed(long timePassed) {
+        statistics.ioQueueLengthTime += IOQueue.getQueueLength()*timePassed;
+        if (IOQueue.getQueueLength() > statistics.IOQueueLargestLength) {
+            statistics.IOQueueLargestLength = IOQueue.getQueueLength();
         }
     }
 }

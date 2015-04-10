@@ -70,16 +70,18 @@ public class Process implements Constants {
     /**
      * The number of times that this process has been placed in the CPU queue
      */
-    private long nofTimesInReadyQueue = 0;
+    private long nofTimesInReadyQueue = 1;
     /**
      * The number of times that this process has been placed in the I/O queue
      */
     private long nofTimesInIoQueue = 0;
-
     /**
      * The global time of the last event involving this process
      */
     private long timeOfLastEvent;
+
+    public long timeEnteredReadyQueue = 0;
+    public long timeEnteredIOQueue = 0;
 
     public boolean isAssignedEvent = false;
 
@@ -137,8 +139,10 @@ public class Process implements Constants {
      */
     public void leftMemoryQueue(long clock) {
         timeSpentWaitingForMemory += clock - timeOfLastEvent;
-        timeOfLastEvent = clock;
+        //timeOfLastEvent = clock;
     }
+
+    public long timeEnteredIO = 0;
 
     /**
      * Returns the amount of memory needed by this process.
@@ -164,8 +168,6 @@ public class Process implements Constants {
     public long getCpuTimeNeeded() {
         return cpuTimeNeeded;
     }
-
-    // Add more methods as needed
 
     public long getTimeSpentInCpu() {
         return timeSpentInCpu;
@@ -202,7 +204,53 @@ public class Process implements Constants {
         return processId;
     }
 
+    public void incrementnofTimesInReadyQueue(){
+        nofTimesInReadyQueue++;
+    }
 
+    public void incrementenofTimesInIoQueue() {
+        nofTimesInIoQueue++;
+    }
+
+    public long getNofTimesInReadyQueue() {
+        return nofTimesInReadyQueue;
+    }
+
+    public long getNofTimesInIoQueue() {
+        return nofTimesInIoQueue;
+    }
+
+    public long getTimeOfLastEvent() {
+        return timeOfLastEvent;
+    }
+
+    public long getTimeSpentWaitingForMemory() {
+        return timeSpentWaitingForMemory;
+    }
+
+    public long getTimeSpentInReadyQueue() {
+        return timeSpentInReadyQueue;
+    }
+
+    public void setTimeSpentInReadyQueue(long timeSpentInReadyQueue) {
+        this.timeSpentInReadyQueue = timeSpentInReadyQueue;
+    }
+
+    public long getTimeSpentWaitingForIo() {
+        return timeSpentWaitingForIo;
+    }
+
+    public void setTimeSpentWaitingForIo(long timeSpentWaitingForIo) {
+        this.timeSpentWaitingForIo = timeSpentWaitingForIo;
+    }
+
+    public long getTimeSpentInIo() {
+        return timeSpentInIo;
+    }
+
+    public void setTimeSpentInIo(long timeSpentInIo) {
+        this.timeSpentInIo = timeSpentInIo;
+    }
 }
 
 

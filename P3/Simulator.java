@@ -72,16 +72,12 @@ public class Simulator implements Constants
 			// Find out how much time that passed...
 			long timeDifference = event.getTime()-clock;
 
-            if (timeDifference < 0) {
-                System.out.println("clock: " + clock);
-                System.out.println("time: " + event.getTime());
-                System.out.println("type: " + event.getType());
-            }
-
 			// ...and update the clock.
 			clock = event.getTime();
 			// Let the memory unit and the GUI know that time has passed
 			memory.timePassed(timeDifference);
+			cpu.timePassed(timeDifference);
+			io.timePassed(timeDifference);
 			gui.timePassed(timeDifference);
 			// Deal with the event
 			if (clock < simulationLength) {
@@ -90,7 +86,7 @@ public class Simulator implements Constants
 		}
 		System.out.println("..done.");
 		// End the simulation by printing out the required statistics
-		statistics.printReport(simulationLength); //TODO
+		statistics.printReport(simulationLength);
 	}
 
 	/**
@@ -143,14 +139,10 @@ public class Simulator implements Constants
 		Process p = memory.checkMemory(clock);
 		// As long as there is enough memory, processes are moved from the memory queue to the cpu queue
 		while(p != null) {
-
             cpu.insertProcess(p);
-
+            p.timeEnteredReadyQueue = clock;
 			// Try to use the freed memory:
 			flushMemoryQueue();
-			// Update statistics
-			p.updateStatistics(statistics);
-
 			// Check for more free memory
 			p = memory.checkMemory(clock);
 		}
@@ -187,7 +179,9 @@ public class Simulator implements Constants
         io.setActiveIO(gui);
         if (p != null && !p.isAssignedEvent) {
             p.isAssignedEvent = true;
-            eventQueue.insertEvent(new Event(END_IO, clock + io.getRadomIoExecuteTime()));
+            long timeNeededInIO = io.getRadomIoExecuteTime();
+            p.timeEnteredIO = clock;
+            eventQueue.insertEvent(new Event(END_IO, clock + timeNeededInIO));
         }
     }
 
@@ -196,6 +190,7 @@ public class Simulator implements Constants
 	 */
 	private void switchProcess() {
         cpu.switchFront();
+        statistics.nofProcessSwitches++;
         flushMemoryQueue();
         flushCpuQueue();
         flushIoQueue();
@@ -205,7 +200,8 @@ public class Simulator implements Constants
 	 * Ends the active process
 	 */
 	private void endProcess() {
-        cpu.endProcess(memory);
+        cpu.endProcess(memory, clock);
+        statistics.nofCompletedProcesses++;
         flushMemoryQueue();
         flushCpuQueue();
         flushIoQueue();
@@ -217,7 +213,7 @@ public class Simulator implements Constants
 	 * perform an I/O operation.
 	 */
 	private void processIoRequest() {
-		cpu.moveProcessToIo(io);
+		cpu.moveProcessToIo(io, clock);
         flushMemoryQueue();
         flushCpuQueue();
         flushIoQueue();
@@ -228,7 +224,8 @@ public class Simulator implements Constants
 	 * is done with its I/O operation.
 	 */
 	private void endIoOperation() {
-		io.moveProcessToCpu(cpu);
+		io.moveProcessToCpu(cpu, clock);
+        statistics.nofCompletedIOOperations++;
         flushMemoryQueue();
         flushCpuQueue();
         flushIoQueue();
@@ -260,28 +257,39 @@ public class Simulator implements Constants
 		System.out.println("Please input system parameters: ");
 
 		System.out.print("Memory size (KB): ");
-		long memorySize =  2048;//TODO readLong(reader);
+		long memorySize = readLong(reader);
 		while(memorySize < 400) {
 			System.out.println("Memory size must be at least 400 KB. Specify memory size (KB): ");
 			memorySize = readLong(reader);
 		}
 
 		System.out.print("Maximum uninterrupted cpu time for a process (ms): ");
-		long maxCpuTime = 500;//TODO readLong(reader);
+		long maxCpuTime = readLong(reader);
 
 		System.out.print("Average I/O operation time (ms): ");
-		long avgIoTime = 225;//TODO readLong(reader);
+		long avgIoTime = readLong(reader);
 
 		System.out.print("Simulation length (ms): ");
-		long simulationLength = 60000;//TODO readLong(reader);
+		long simulationLength = readLong(reader);
 		while(simulationLength < 1) {
 			System.out.println("Simulation length must be at least 1 ms. Specify simulation length (ms): ");
 			simulationLength = readLong(reader);
 		}
 
 		System.out.print("Average time between process arrivals (ms): ");
-		long avgArrivalInterval = 5000; //TODO readLong(reader);
+		long avgArrivalInterval = readLong(reader);
 
 		SimulationGui gui = new SimulationGui(memorySize, maxCpuTime, avgIoTime, simulationLength, avgArrivalInterval);
 	}
+
+
+    /*
+
+    Kommentar om round robin eksperimentering.
+    Det man kan gjøre her er å øke eller minke tidskvantet som når det utløper gjør at den fremste prosessen blir flyttet tilbake i køen.
+    Dersom man har et lavt tidskvant vil switchingen skje langt hyppigere, dette gjør at prosesser vil bli prosessert mer jevnt seg i mellom. Dersom man har et høyt tidskvant
+    er fokus på at man skal få unnagjort den prosesseringen det fremste elementet trenger så fort som mulig.
+    (Her tar jo ikke switchingen noe tid, så man taper ikke noe tid på det)
+
+     */
 }
