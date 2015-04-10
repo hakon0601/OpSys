@@ -1,4 +1,5 @@
 import java.awt.*;
+import java.util.Random;
 
 /**
  * This class contains data associated with processes,
@@ -80,6 +81,8 @@ public class Process implements Constants {
      */
     private long timeOfLastEvent;
 
+    public boolean isAssignedEvent = false;
+
     /**
      * Creates a new process with given parameters. Other parameters are randomly
      * determined.
@@ -94,6 +97,8 @@ public class Process implements Constants {
         cpuTimeNeeded = 100 + (long) (Math.random() * 9900);
         // Average interval between I/O requests varies from 1% to 25% of CPU time needed
         avgIoInterval = (1 + (long) (Math.random() * 25)) * cpuTimeNeeded / 100;
+        timeToNextIoOperation = generateTimeToNextIoOperation();
+
         // The first and latest event involving this process is its creation
         timeOfLastEvent = creationTime;
         // Assign a process ID
@@ -182,6 +187,22 @@ public class Process implements Constants {
     public long getAvgIoInterval() {
         return avgIoInterval;
     }
+
+    public long generateTimeToNextIoOperation() {
+        int a = new Random().nextInt(120 - 80) + 80;
+        double b = a/100.0;
+        double c = b * avgIoInterval;
+        long d = Math.round(c);
+        return d;
+        // return Math.round((double)((new Random().nextInt(110 - 90) + 90)/100)*avgIoInterval);
+    }
+
+
+    public long getProcessId() {
+        return processId;
+    }
+
+
 }
 
 

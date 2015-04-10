@@ -9,7 +9,8 @@ public class Memory {
 	private Statistics statistics;
 	/** The amount of memory in the memory device */
 	private long memorySize;
-	/** The amount of free memory in the memory device */
+
+    /** The amount of free memory in the memory device */
 	private long freeMemory;
 
 	/**
@@ -81,5 +82,8 @@ public class Memory {
     public void processCompleted(Process p) {
 		freeMemory += p.getMemoryNeeded();
     }
-}
 
+    public long getFreeMemory() {
+        return freeMemory;
+    }
+}
